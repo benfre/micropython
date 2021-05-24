@@ -9,9 +9,8 @@
 #define MICROPY_HW_ENABLE_RNG       (1)
 #define MICROPY_HW_ENABLE_RTC       (1)
 #define MICROPY_HW_ENABLE_DAC       (1)
-// #define MICROPY_HW_ENABLE_USB       (1)
+#define MICROPY_HW_ENABLE_USB       (1)
 #define MICROPY_HW_ENABLE_SDCARD    (1)
-// #define MICROPY_HW_ENABLE_MMCARD    (1)
 
 #define MICROPY_BOARD_EARLY_INIT    iCore4_board_early_init
 void iCore4_board_early_init(void);
@@ -20,7 +19,7 @@ void iCore4_board_early_init(void);
 #define MICROPY_HW_CLK_PLLM (12)
 #define MICROPY_HW_CLK_PLLN (216)
 #define MICROPY_HW_CLK_PLLP (RCC_PLLP_DIV2)
-#define MICROPY_HW_CLK_PLLQ (2)
+#define MICROPY_HW_CLK_PLLQ (9)
 #define MICROPY_HW_FLASH_LATENCY (FLASH_LATENCY_7) // 210-216 MHz needs 7 wait states
 
 // UART config
@@ -61,7 +60,10 @@ void iCore4_board_early_init(void);
 // #define MICROPY_HW_SDCARD_DETECT_PULL       (GPIO_NOPULL)
 // #define MICROPY_HW_SDCARD_DETECT_PRESENT    (GPIO_PIN_RESET)
 
-// USB config (CN13 - USB OTG FS)
+// USB config (USB OTG HS with external PHY)
+#define MICROPY_HW_USB_HS           (1)
+#define MICROPY_HW_USB_HS_ULPI_NXT  (pin_H4)
+#define MICROPY_HW_USB_HS_ULPI_DIR  (pin_I11)
 
 // Ethernet via RMII
 #define LAN_reset (pin_A0)
