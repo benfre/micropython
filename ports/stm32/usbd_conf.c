@@ -59,6 +59,7 @@ PCD_HandleTypeDef pcd_hs_handle;
   * @retval None
   */
 void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
+    #if MICROPY_HW_USB_FS
     if (hpcd->Instance == USB_OTG_FS) {
         #if defined(STM32H7)
         const uint32_t otg_alt = GPIO_AF10_OTG1_FS;
@@ -126,8 +127,10 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
         HAL_NVIC_EnableIRQ(OTG_FS_IRQn);
         #endif
     }
+    #endif //MICROPY_HW_USB_FS
+  
     #if MICROPY_HW_USB_HS
-    else if (hpcd->Instance == USB_OTG_HS) {
+    if (hpcd->Instance == USB_OTG_HS) {
         #if MICROPY_HW_USB_HS_IN_FS
 
         #if defined(STM32H7)
