@@ -419,7 +419,7 @@ HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_,\
 	)
 endif
 
-ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx))
+ifeq ($(CMSIS_MCU),$(filter $(CMSIS_MCU),STM32H743xx STM32H750xx))
     HAL_SRC_C += $(addprefix $(HAL_DIR)/Src/stm32$(MCU_SERIES)xx_, hal_fdcan.c)
 else
 ifeq ($(MCU_SERIES),$(filter $(MCU_SERIES),f0 f4 f7 h7 l4))

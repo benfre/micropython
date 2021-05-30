@@ -172,6 +172,9 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 
         #else // !MICROPY_HW_USB_HS_IN_FS
 
+        #if defined(STM32H7)
+        #define GPIO_AF10_OTG_HS GPIO_AF10_OTG1_HS
+        #endif
         // Configure USB HS GPIOs
         static const mp_hal_pin_obj_t usb_pins[] = {
             pin_A5, pin_C0, MICROPY_HW_USB_HS_ULPI_NXT, MICROPY_HW_USB_HS_ULPI_DIR, // CLK, STP, NXT, DIR
