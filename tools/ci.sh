@@ -146,6 +146,7 @@ function ci_mimxrt_setup {
 }
 
 function ci_mimxrt_build {
+    make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/mimxrt submodules
     make ${MAKEOPTS} -C ports/mimxrt BOARD=MIMXRT1020_EVK
     make ${MAKEOPTS} -C ports/mimxrt BOARD=TEENSY40
@@ -299,11 +300,21 @@ CI_UNIX_OPTS_QEMU_MIPS=(
     LDFLAGS_EXTRA="-static"
 )
 
+CI_UNIX_OPTS_QEMU_ARM=(
+    CROSS_COMPILE=arm-linux-gnueabi-
+    VARIANT=coverage
+    MICROPY_STANDALONE=1
+)
+
 function ci_unix_build_helper {
     make ${MAKEOPTS} -C mpy-cross
     make ${MAKEOPTS} -C ports/unix "$@" submodules
     make ${MAKEOPTS} -C ports/unix "$@" deplibs
     make ${MAKEOPTS} -C ports/unix "$@"
+}
+
+function ci_unix_build_ffi_lib_helper {
+    $1 $2 -shared -o tests/unix/ffi_lib.so tests/unix/ffi_lib.c
 }
 
 function ci_unix_run_tests_helper {
@@ -352,6 +363,7 @@ function ci_unix_minimal_run_tests {
 
 function ci_unix_standard_build {
     ci_unix_build_helper VARIANT=standard
+    ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_standard_run_tests {
@@ -372,6 +384,7 @@ function ci_unix_coverage_setup {
 
 function ci_unix_coverage_build {
     ci_unix_build_helper VARIANT=coverage
+    ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_coverage_run_tests {
@@ -396,6 +409,7 @@ function ci_unix_32bit_setup {
 
 function ci_unix_coverage_32bit_build {
     ci_unix_build_helper VARIANT=coverage MICROPY_FORCE_32BIT=1
+    ci_unix_build_ffi_lib_helper gcc -m32
 }
 
 function ci_unix_coverage_32bit_run_tests {
@@ -409,6 +423,7 @@ function ci_unix_coverage_32bit_run_native_mpy_tests {
 function ci_unix_nanbox_build {
     # Use Python 2 to check that it can run the build scripts
     ci_unix_build_helper PYTHON=python2 VARIANT=nanbox
+    ci_unix_build_ffi_lib_helper gcc -m32
 }
 
 function ci_unix_nanbox_run_tests {
@@ -417,6 +432,7 @@ function ci_unix_nanbox_run_tests {
 
 function ci_unix_float_build {
     ci_unix_build_helper VARIANT=standard CFLAGS_EXTRA="-DMICROPY_FLOAT_IMPL=MICROPY_FLOAT_IMPL_FLOAT"
+    ci_unix_build_ffi_lib_helper gcc
 }
 
 function ci_unix_float_run_tests {
@@ -505,6 +521,26 @@ function ci_unix_qemu_mips_run_tests {
     (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py' --exclude 'ffi_(callback|float|float2).py')
 }
 
+function ci_unix_qemu_arm_setup {
+    sudo apt-get update
+    sudo apt-get install gcc-arm-linux-gnueabi g++-arm-linux-gnueabi
+    sudo apt-get install qemu-user
+    qemu-arm --version
+}
+
+function ci_unix_qemu_arm_build {
+    ci_unix_build_helper "${CI_UNIX_OPTS_QEMU_ARM[@]}"
+    ci_unix_build_ffi_lib_helper arm-linux-gnueabi-gcc
+}
+
+function ci_unix_qemu_arm_run_tests {
+    # Issues with ARM tests:
+    # - (i)listdir does not work, it always returns the empty list (it's an issue with the underlying C call)
+    export QEMU_LD_PREFIX=/usr/arm-linux-gnueabi
+    file ./ports/unix/micropython-coverage
+    (cd tests && MICROPY_MICROPYTHON=../ports/unix/micropython-coverage ./run-tests.py --exclude 'vfs_posix.py')
+}
+
 ########################################################################################
 # ports/windows
 
@@ -533,7 +569,7 @@ function ci_zephyr_setup {
 }
 
 function ci_zephyr_install {
-    docker exec zephyr-ci west init --mr v2.5.0 /zephyrproject
+    docker exec zephyr-ci west init --mr v2.6.0 /zephyrproject
     docker exec -w /zephyrproject zephyr-ci west update
     docker exec -w /zephyrproject zephyr-ci west zephyr-export
 }
